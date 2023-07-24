@@ -1,0 +1,20 @@
+[
+  {
+    "id": 436,
+    "category": {
+      "id": 413,
+      "name": "Automotive"
+    },
+    "name": "Outdoors",
+    "photoUrls": [
+      "string"
+    ],
+    "tags": [
+      {
+        "id": 0,
+        "name": "string"
+      }
+    ],
+    "status": "sold"
+  }
+]
