@@ -12,6 +12,7 @@ import (
 func Test_CreateUser(t *testing.T) {
 	url := host + "/v2/user"
 	username := "testing_user"
+	userData := "{\n  \"id\": 123456789,\n  \"username\": \"testing_user\",\n  \"firstName\": \"test\",\n  \"lastName\": \"user\",\n  \"email\": \"test@test.com\",\n  \"password\": \"Strong_Password\",\n  \"phone\": \"+1234567890\",\n  \"userStatus\": 1\n}"
 	cute.NewTestBuilder().
 		Epic("Swagger Petstore").
 		Story("User").
@@ -24,7 +25,7 @@ func Test_CreateUser(t *testing.T) {
 			cute.WithMethod(http.MethodPost),
 			cute.WithHeadersKV("accept", "application/json"),
 			cute.WithHeadersKV("Content-Type", "application/json"),
-			cute.WithBody([]byte("{\n  \"id\": 123456789,\n  \"username\": \"testing_user\",\n  \"firstName\": \"test\",\n  \"lastName\": \"user\",\n  \"email\": \"test@test.com\",\n  \"password\": \"Strong_Password\",\n  \"phone\": \"+1234567890\",\n  \"userStatus\": 1\n}")),
+			cute.WithBody([]byte(userData)),
 		).
 		ExpectExecuteTimeout(10*time.Second).
 		ExpectStatus(http.StatusOK).
