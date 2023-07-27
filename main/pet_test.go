@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-const host = "https://petstore.swagger.io"
-
 func Test_FindByStatus(t *testing.T) {
 	url := host + "/v2/pet/findByStatus"
 	cute.NewTestBuilder().
