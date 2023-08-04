@@ -35,7 +35,7 @@ func Test_CreateUser(t *testing.T) {
 			cute.WithHeadersKV("Content-Type", "application/json"),
 			cute.WithBody([]byte(userData)),
 		).
-		ExpectExecuteTimeout(10*time.Second).
+		ExpectExecuteTimeout(5*time.Second).
 		ExpectStatus(http.StatusOK).
 		AssertBody(
 			json.Equal("$.code", 200),
@@ -44,10 +44,30 @@ func Test_CreateUser(t *testing.T) {
 		).
 		NextTest().
 		CreateStep("Get user by username").
+		AfterExecute(func(resp *http.Response, errs []error) error {
+			cute.NewTestBuilder().
+				Title("Delete user").
+				Create().
+				RequestBuilder(
+					cute.WithURI(url+"/"+username),
+					cute.WithMethod(http.MethodDelete),
+				).
+				ExpectExecuteTimeout(5*time.Second).
+				ExpectStatus(http.StatusOK).
+				AssertBody(
+					json.Equal("$.code", 200),
+					json.Equal("$.type", "unknown"),
+					json.Equal("$.message", username),
+				).
+				ExecuteTest(context.Background(), t)
+			return nil
+		}).
 		RequestBuilder(
 			cute.WithURI(url+"/"+username),
 			cute.WithMethod(http.MethodGet),
 		).
+		ExpectExecuteTimeout(5*time.Second).
+		ExpectStatus(http.StatusOK).
 		AssertBody(
 			json.Equal("$.id", id),
 			json.Equal("$.username", username),
@@ -57,18 +77,6 @@ func Test_CreateUser(t *testing.T) {
 			json.Equal("$.password", password),
 			json.Equal("$.phone", phone),
 			json.Equal("$.userStatus", userStatus),
-		).
-		NextTest().
-		//TODO: подумать как вынести это из шага в postcondition
-		CreateStep("Delete user").
-		RequestBuilder(
-			cute.WithURI(url+"/"+username),
-			cute.WithMethod(http.MethodDelete),
-		).
-		AssertBody(
-			json.Equal("$.code", 200),
-			json.Equal("$.type", "unknown"),
-			json.Equal("$.message", username),
 		).
 		ExecuteTest(context.Background(), t)
 }
@@ -96,7 +104,7 @@ func Test_UpdateUser(t *testing.T) {
 					cute.WithHeadersKV("Content-Type", "application/json"),
 					cute.WithBody([]byte(userData)),
 				).
-				ExpectExecuteTimeout(10*time.Second).
+				ExpectExecuteTimeout(5*time.Second).
 				ExpectStatus(http.StatusOK).
 				AssertBody(
 					json.Equal("$.code", 200),
@@ -113,6 +121,8 @@ func Test_UpdateUser(t *testing.T) {
 			cute.WithHeadersKV("Content-Type", "application/json"),
 			cute.WithBody([]byte(newUserData)),
 		).
+		ExpectExecuteTimeout(5*time.Second).
+		ExpectStatus(http.StatusOK).
 		AssertBody(
 			json.Equal("$.code", 200),
 			json.Equal("$.type", "unknown"),
@@ -128,7 +138,7 @@ func Test_UpdateUser(t *testing.T) {
 					cute.WithURI(url+"/"+newUsername),
 					cute.WithMethod(http.MethodDelete),
 				).
-				ExpectExecuteTimeout(10*time.Second).
+				ExpectExecuteTimeout(5*time.Second).
 				ExpectStatus(http.StatusOK).
 				AssertBody(
 					json.Equal("$.code", 200),
@@ -142,6 +152,8 @@ func Test_UpdateUser(t *testing.T) {
 			cute.WithURI(url+"/"+newUsername),
 			cute.WithMethod(http.MethodGet),
 		).
+		ExpectExecuteTimeout(5*time.Second).
+		ExpectStatus(http.StatusOK).
 		AssertBody(
 			json.Equal("$.id", id),
 			json.Equal("$.username", newUsername),
@@ -151,6 +163,62 @@ func Test_UpdateUser(t *testing.T) {
 			json.Equal("$.password", password),
 			json.Equal("$.phone", phone),
 			json.Equal("$.userStatus", userStatus),
+		).
+		ExecuteTest(context.Background(), t)
+}
+
+func Test_DeleteUser(t *testing.T) {
+	cute.NewTestBuilder().
+		Epic("Swagger Petstore").
+		Story("User").
+		Feature("DELETE /user/{username}").
+		Title("Delete user").
+		Tags("regress", "smoke").
+		CreateStep("Delete user").
+		BeforeExecute(func(req *http.Request) error {
+			cute.NewTestBuilder().
+				Title("Create new user").
+				Create().
+				RequestBuilder(
+					cute.WithURI(url),
+					cute.WithMethod(http.MethodPost),
+					cute.WithHeadersKV("accept", "application/json"),
+					cute.WithHeadersKV("Content-Type", "application/json"),
+					cute.WithBody([]byte(userData)),
+				).
+				ExpectExecuteTimeout(5*time.Second).
+				ExpectStatus(http.StatusOK).
+				AssertBody(
+					json.Equal("$.code", 200),
+					json.Equal("$.type", "unknown"),
+					json.Equal("$.message", id),
+				).
+				ExecuteTest(context.Background(), t)
+			return nil
+		}).
+		RequestBuilder(
+			cute.WithURI(url+"/"+username),
+			cute.WithMethod(http.MethodDelete),
+		).
+		ExpectExecuteTimeout(5*time.Second).
+		ExpectStatus(http.StatusOK).
+		AssertBody(
+			json.Equal("$.code", 200),
+			json.Equal("$.type", "unknown"),
+			json.Equal("$.message", username),
+		).
+		NextTest().
+		CreateStep("Get user by username").
+		RequestBuilder(
+			cute.WithURI(url+"/"+username),
+			cute.WithMethod(http.MethodGet),
+		).
+		ExpectStatus(http.StatusNotFound).
+		ExpectExecuteTimeout(5*time.Second).
+		AssertBody(
+			json.Equal("$.code", 1),
+			json.Equal("$.type", "error"),
+			json.Equal("$.message", "User not found"),
 		).
 		ExecuteTest(context.Background(), t)
 }
@@ -174,7 +242,7 @@ func Test_LoginUser(t *testing.T) {
 					cute.WithHeadersKV("Content-Type", "application/json"),
 					cute.WithBody([]byte(userData)),
 				).
-				ExpectExecuteTimeout(10*time.Second).
+				ExpectExecuteTimeout(5*time.Second).
 				ExpectStatus(http.StatusOK).
 				AssertBody(
 					json.Equal("$.code", 200),
@@ -192,7 +260,7 @@ func Test_LoginUser(t *testing.T) {
 					cute.WithURI(url+"/"+username),
 					cute.WithMethod(http.MethodDelete),
 				).
-				ExpectExecuteTimeout(10*time.Second).
+				ExpectExecuteTimeout(5*time.Second).
 				ExpectStatus(http.StatusOK).
 				AssertBody(
 					json.Equal("$.code", 200),
@@ -208,6 +276,8 @@ func Test_LoginUser(t *testing.T) {
 			cute.WithQueryKV("username", username),
 			cute.WithQueryKV("password", password),
 		).
+		ExpectStatus(http.StatusOK).
+		ExpectExecuteTimeout(5*time.Second).
 		AssertBody(
 			json.Equal("$.code", 200),
 			json.Equal("$.type", "unknown"),
@@ -215,18 +285,6 @@ func Test_LoginUser(t *testing.T) {
 			//json.Equal("$.message", "logged in user session:"+string(time.Now().Nanosecond())),
 			json.NotEmpty("$.message"),
 		).
-		//NextTest().
-		////TODO: подумать как вынести это из шага в postcondition
-		//CreateStep("Logs out current logged in user session").
-		//RequestBuilder(
-		//	cute.WithURI(url+"/logout"),
-		//	cute.WithMethod(http.MethodGet),
-		//).
-		//AssertBody(
-		//	json.Equal("$.code", 200),
-		//	json.Equal("$.type", "unknown"),
-		//	json.Equal("$.message", "ok"),
-		//).
 		ExecuteTest(context.Background(), t)
 }
 
@@ -248,7 +306,7 @@ func Test_LogoutUser(t *testing.T) {
 					cute.WithHeadersKV("Content-Type", "application/json"),
 					cute.WithBody([]byte(userData)),
 				).
-				ExpectExecuteTimeout(10*time.Second).
+				ExpectExecuteTimeout(5*time.Second).
 				ExpectStatus(http.StatusOK).
 				AssertBody(
 					json.Equal("$.code", 200),
@@ -263,6 +321,8 @@ func Test_LogoutUser(t *testing.T) {
 					cute.WithQueryKV("username", username),
 					cute.WithQueryKV("password", password),
 				).
+				ExpectExecuteTimeout(5*time.Second).
+				ExpectStatus(http.StatusOK).
 				AssertBody(
 					json.Equal("$.code", 200),
 					json.Equal("$.type", "unknown"),
@@ -279,7 +339,7 @@ func Test_LogoutUser(t *testing.T) {
 					cute.WithURI(url+"/"+username),
 					cute.WithMethod(http.MethodDelete),
 				).
-				ExpectExecuteTimeout(10*time.Second).
+				ExpectExecuteTimeout(5*time.Second).
 				ExpectStatus(http.StatusOK).
 				AssertBody(
 					json.Equal("$.code", 200),
@@ -293,6 +353,8 @@ func Test_LogoutUser(t *testing.T) {
 			cute.WithURI(url+"/logout"),
 			cute.WithMethod(http.MethodGet),
 		).
+		ExpectExecuteTimeout(5*time.Second).
+		ExpectStatus(http.StatusOK).
 		AssertBody(
 			json.Equal("$.code", 200),
 			json.Equal("$.type", "unknown"),
