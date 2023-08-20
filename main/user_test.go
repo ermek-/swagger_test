@@ -9,17 +9,6 @@ import (
 	"time"
 )
 
-var url = host + "/v2/user"
-var id = "123"
-var username = "testing_user"
-var firstName = "test"
-var lastName = "test"
-var email = "test@test.com"
-var password = "Strong_Password"
-var phone = "+1234567890"
-var userStatus = "1"
-var userData = "{\n  \"id\": " + id + ",\n  \"username\": \"" + username + "\",\n  \"firstName\": \"" + firstName + "\",\n  \"lastName\": \"" + lastName + "\",\n  \"email\": \"" + email + "\",\n  \"password\": \"" + password + "\",\n  \"phone\": \"" + phone + "\",\n  \"userStatus\": " + userStatus + "\n}"
-
 func Test_CreateUser(t *testing.T) {
 	cute.NewTestBuilder().
 		Epic("Swagger Petstore").
@@ -29,7 +18,7 @@ func Test_CreateUser(t *testing.T) {
 		Tags("regress", "smoke").
 		CreateStep("Create new user").
 		RequestBuilder(
-			cute.WithURI(url),
+			cute.WithURI(userUrl),
 			cute.WithMethod(http.MethodPost),
 			cute.WithHeadersKV("accept", "application/json"),
 			cute.WithHeadersKV("Content-Type", "application/json"),
@@ -49,7 +38,7 @@ func Test_CreateUser(t *testing.T) {
 				Title("Delete user").
 				Create().
 				RequestBuilder(
-					cute.WithURI(url+"/"+username),
+					cute.WithURI(userUrl+"/"+username),
 					cute.WithMethod(http.MethodDelete),
 				).
 				ExpectExecuteTimeout(5*time.Second).
@@ -63,7 +52,7 @@ func Test_CreateUser(t *testing.T) {
 			return nil
 		}).
 		RequestBuilder(
-			cute.WithURI(url+"/"+username),
+			cute.WithURI(userUrl+"/"+username),
 			cute.WithMethod(http.MethodGet),
 		).
 		ExpectExecuteTimeout(5*time.Second).
@@ -98,7 +87,7 @@ func Test_UpdateUser(t *testing.T) {
 				Title("Create new user").
 				Create().
 				RequestBuilder(
-					cute.WithURI(url),
+					cute.WithURI(userUrl),
 					cute.WithMethod(http.MethodPost),
 					cute.WithHeadersKV("accept", "application/json"),
 					cute.WithHeadersKV("Content-Type", "application/json"),
@@ -115,7 +104,7 @@ func Test_UpdateUser(t *testing.T) {
 			return nil
 		}).
 		RequestBuilder(
-			cute.WithURI(url+"/"+username),
+			cute.WithURI(userUrl+"/"+username),
 			cute.WithMethod(http.MethodPut),
 			cute.WithHeadersKV("accept", "application/json"),
 			cute.WithHeadersKV("Content-Type", "application/json"),
@@ -135,7 +124,7 @@ func Test_UpdateUser(t *testing.T) {
 				Title("Delete user").
 				Create().
 				RequestBuilder(
-					cute.WithURI(url+"/"+newUsername),
+					cute.WithURI(userUrl+"/"+newUsername),
 					cute.WithMethod(http.MethodDelete),
 				).
 				ExpectExecuteTimeout(5*time.Second).
@@ -149,7 +138,7 @@ func Test_UpdateUser(t *testing.T) {
 			return nil
 		}).
 		RequestBuilder(
-			cute.WithURI(url+"/"+newUsername),
+			cute.WithURI(userUrl+"/"+newUsername),
 			cute.WithMethod(http.MethodGet),
 		).
 		ExpectExecuteTimeout(5*time.Second).
@@ -180,7 +169,7 @@ func Test_DeleteUser(t *testing.T) {
 				Title("Create new user").
 				Create().
 				RequestBuilder(
-					cute.WithURI(url),
+					cute.WithURI(userUrl),
 					cute.WithMethod(http.MethodPost),
 					cute.WithHeadersKV("accept", "application/json"),
 					cute.WithHeadersKV("Content-Type", "application/json"),
@@ -197,7 +186,7 @@ func Test_DeleteUser(t *testing.T) {
 			return nil
 		}).
 		RequestBuilder(
-			cute.WithURI(url+"/"+username),
+			cute.WithURI(userUrl+"/"+username),
 			cute.WithMethod(http.MethodDelete),
 		).
 		ExpectExecuteTimeout(5*time.Second).
@@ -210,7 +199,7 @@ func Test_DeleteUser(t *testing.T) {
 		NextTest().
 		CreateStep("Get user by username").
 		RequestBuilder(
-			cute.WithURI(url+"/"+username),
+			cute.WithURI(userUrl+"/"+username),
 			cute.WithMethod(http.MethodGet),
 		).
 		ExpectStatus(http.StatusNotFound).
@@ -236,7 +225,7 @@ func Test_LoginUser(t *testing.T) {
 				Title("Create new user").
 				Create().
 				RequestBuilder(
-					cute.WithURI(url),
+					cute.WithURI(userUrl),
 					cute.WithMethod(http.MethodPost),
 					cute.WithHeadersKV("accept", "application/json"),
 					cute.WithHeadersKV("Content-Type", "application/json"),
@@ -257,7 +246,7 @@ func Test_LoginUser(t *testing.T) {
 				Title("Delete user").
 				Create().
 				RequestBuilder(
-					cute.WithURI(url+"/"+username),
+					cute.WithURI(userUrl+"/"+username),
 					cute.WithMethod(http.MethodDelete),
 				).
 				ExpectExecuteTimeout(5*time.Second).
@@ -271,7 +260,7 @@ func Test_LoginUser(t *testing.T) {
 			return nil
 		}).
 		RequestBuilder(
-			cute.WithURI(url+"/login"),
+			cute.WithURI(userUrl+"/login"),
 			cute.WithMethod(http.MethodGet),
 			cute.WithQueryKV("username", username),
 			cute.WithQueryKV("password", password),
@@ -300,7 +289,7 @@ func Test_LogoutUser(t *testing.T) {
 			cute.NewTestBuilder().
 				CreateStep("Create new user").
 				RequestBuilder(
-					cute.WithURI(url),
+					cute.WithURI(userUrl),
 					cute.WithMethod(http.MethodPost),
 					cute.WithHeadersKV("accept", "application/json"),
 					cute.WithHeadersKV("Content-Type", "application/json"),
@@ -316,7 +305,7 @@ func Test_LogoutUser(t *testing.T) {
 				NextTest().
 				CreateStep("Login user").
 				RequestBuilder(
-					cute.WithURI(url+"/login"),
+					cute.WithURI(userUrl+"/login"),
 					cute.WithMethod(http.MethodGet),
 					cute.WithQueryKV("username", username),
 					cute.WithQueryKV("password", password),
@@ -336,7 +325,7 @@ func Test_LogoutUser(t *testing.T) {
 				Title("Delete user").
 				Create().
 				RequestBuilder(
-					cute.WithURI(url+"/"+username),
+					cute.WithURI(userUrl+"/"+username),
 					cute.WithMethod(http.MethodDelete),
 				).
 				ExpectExecuteTimeout(5*time.Second).
@@ -350,7 +339,7 @@ func Test_LogoutUser(t *testing.T) {
 			return nil
 		}).
 		RequestBuilder(
-			cute.WithURI(url+"/logout"),
+			cute.WithURI(userUrl+"/logout"),
 			cute.WithMethod(http.MethodGet),
 		).
 		ExpectExecuteTimeout(5*time.Second).
